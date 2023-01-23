@@ -13,21 +13,19 @@ const getAllMultimedia = catchAsync(async (req, res, next) => {
 });
 
 const createMultimedia = catchAsync(async (req, res, next) => {
-  // const { tittle, description, imagen } = req;
-  // const { lagunasTravel } = req;
-  // const multimedia = await Multimedia.create({ tittle, description, imagen });
-  // console.log(req);
-  console.log(req.body);
-  // const blobName = `${Date.now()}_${req.file.originalname}`;
-  // await uploadImage(req.file, blobName);
-  // res.status(201).json({ req });
+  const { tittle, description, imagen } = req.body;
+  const multimedia = await Multimedia.create({ tittle, description, imagen });
 
-  // await MultimediaImg.create({
-  //   postID: multimedia.id,
-  //   imgUrl: blobName,
-  // });
+  const blobName = `${Date.now()}_${req.file.originalname}`;
+  await uploadImage(req.file, blobName);
+  res.status(201).json({ req });
 
-  // await res.status(202).json({ multimedia });
+  await MultimediaImg.create({
+    postID: multimedia.id,
+    imgUrl: blobName,
+  });
+
+  await res.status(202).json({ multimedia });
 });
 
 const updateMultimedia = catchAsync(async (req, res, next) => {
