@@ -1,11 +1,40 @@
 const express = require("express");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
+const path = require("path");
 
 // init express
 const app = express();
 
 // util json
 app.use(express.json());
+
+//set template engine
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
+
+// Serving static files
+app.use(express.static(path.join(__dirname, "public")));
+
+const limiter = rateLimit({
+  max: 10000,
+  windowMs: 60 * 60 * 1000, // 1 hr
+  message: "Number of requests have been exceeded",
+});
+app.use(limiter);
+
+// Add security headers
+app.use(helmet());
+
+// Compress responses
+app.use(compression());
+
+// Log incoming requests
+if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+else app.use(morgan("combined"));
 
 // middleware
 const { ErrorHandler } = require("./middleware/handlerError.middleware");
@@ -14,6 +43,7 @@ const { ErrorHandler } = require("./middleware/handlerError.middleware");
 const { GlobalError } = require("./utils/ErrorGlobal.utils");
 
 // Router
+const { viewsRouter } = require("./router/home.router");
 const { userRouter } = require("./router/user.router");
 const { banerInfoRouter } = require("./router/banerInfo.router");
 const { contactRouter } = require("./router/contact.router");
@@ -27,6 +57,7 @@ const { MultimediaRouter } = require("./router/multimedia.router");
 const { ReservaRouter } = require("./router/reserva.router");
 
 // Endpoints
+app.use("/", viewsRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/banerInfo", banerInfoRouter);
 app.use("/api/v1/contact", contactRouter);
